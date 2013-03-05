@@ -1,7 +1,8 @@
 import os
+import re
 from urlparse import urljoin
 from functools import partial
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.urls import url_decode
@@ -57,6 +58,11 @@ def sources_from_index(index, base):
     return {s.url: s.body.splitlines() for s in sources}
 
 
+WHITESPACE_RE = re.compile(r'^\s*')
+prefix_length = lambda line: len(WHITESPACE_RE.match(line).group())
+empty_line = lambda line: bool(len(line.strip()))
+
+
 def generate_report(base, index, sources):
     make_absolute = partial(urljoin, base)
     errors = []
@@ -71,7 +77,14 @@ def generate_report(base, index, sources):
         if substring != token.name:
             pre_context = src[token.src_line - 3:token.src_line]
             post_context = src[token.src_line + 1:token.src_line + 4]
-            errors.append(BadToken(token, substring, line.decode('utf-8'), pre_context, post_context))
+            all_lines = pre_context + post_context + [line]
+            common_prefix = reduce(min, map(prefix_length, filter(empty_line, all_lines)))
+            if common_prefix > 3:
+                trim_prefix = itemgetter(slice(common_prefix, None, None))
+                pre_context = map(trim_prefix, pre_context)
+                post_context = map(trim_prefix, post_context)
+                line = trim_prefix(line)
+            errors.append(BadToken(token, substring, line, pre_context, post_context))
 
     return {'errors': errors, 'tokens': index}
 
