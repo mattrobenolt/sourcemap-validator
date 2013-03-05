@@ -60,7 +60,7 @@ def sources_from_index(index, base):
 
 WHITESPACE_RE = re.compile(r'^\s*')
 prefix_length = lambda line: len(WHITESPACE_RE.match(line).group())
-empty_line = lambda line: bool(len(line.strip()))
+is_blank = lambda line: bool(len(line.strip()))
 
 
 def generate_report(base, index, sources):
@@ -78,7 +78,7 @@ def generate_report(base, index, sources):
             pre_context = src[token.src_line - 3:token.src_line]
             post_context = src[token.src_line + 1:token.src_line + 4]
             all_lines = pre_context + post_context + [line]
-            common_prefix = reduce(min, map(prefix_length, filter(empty_line, all_lines)))
+            common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
             if common_prefix > 3:
                 trim_prefix = itemgetter(slice(common_prefix, None, None))
                 pre_context = map(trim_prefix, pre_context)
