@@ -16,12 +16,15 @@
     .culprit {
         color: #f00;
     }
+    code {
+        border: 1px solid #ccc;
+    }
     </style>
 </head>
 <body>
 <h2>Bad tokens</h2>
 {% for error in errors %}
-<li>{{ error.token.src }} <code>{{ error.expected }}</code> <code>{{ error.token.name }}</code> <ol start="{{ error.token.src_line - 3 }}">
+<li>{{ error.token.src }} Source: <code>{{ error.expected }}</code> Token: <code>{{ error.token.name }}</code> <ol start="{{ error.token.src_line - 3 }}">
 {% for line in error.pre %}
 <li><pre>{{ line }}</pre></li>
 {% endfor %}
