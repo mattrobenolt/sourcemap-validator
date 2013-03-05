@@ -13,7 +13,8 @@ from gevent import monkey
 monkey.patch_all()
 
 # js_source = 'http://code.jquery.com/jquery-1.9.1.min.js'
-js_source = 'http://d3nslu0hdya83q.cloudfront.net/dist/1.0/raven.min.js'
+# js_source = 'http://d3nslu0hdya83q.cloudfront.net/dist/1.0/raven.min.js'
+js_source = 'http://getsentry-cdn.s3.amazonaws.com/test/raven.min.js'
 
 BadToken = namedtuple('BadToken', ['token', 'expected', 'line', 'pre', 'post'])
 
@@ -54,7 +55,7 @@ def application(request):
         if substring != token.name:
             pre_context = src[token.src_line-3:token.src_line]
             post_context = src[token.src_line+1:token.src_line+4]
-            bad_tokens.append(BadToken(token, substring, line, pre_context, post_context))
+            bad_tokens.append(BadToken(token, substring, line.decode('utf-8'), pre_context, post_context))
 
     context = dict(
         errors=bad_tokens,
