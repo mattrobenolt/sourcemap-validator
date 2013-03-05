@@ -1,0 +1,4 @@
+Jinja2==2.6
+Werkzeug==0.8.3
+gevent==0.13.8
+sourcemap==0.1.1
