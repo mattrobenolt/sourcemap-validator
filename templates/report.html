@@ -4,6 +4,7 @@
     <style>
     ol {
         font-family: monospace;
+        margin-left: 30px;
     }
     ol li {
         margin: 0;
@@ -22,9 +23,9 @@
     </style>
 </head>
 <body>
-<h2>Bad tokens</h2>
+<h2>Errors</h2>
 {% for error in errors %}
-<li>{{ error.token.src }} Source: <code>{{ error.expected }}</code> Token: <code>{{ error.token.name }}</code> <ol start="{{ error.token.src_line - 3 }}">
+<li>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code> <ol start="{{ error.token.src_line - 3 }}">
 {% for line in error.pre %}
 <li><pre>{{ line }}</pre></li>
 {% endfor %}
