@@ -119,6 +119,15 @@ def make_app():
 
 
 if __name__ == '__main__':
-    from gevent.wsgi import WSGIServer
+    import sys
+
+    app = make_app()
     port = int(os.environ.get('PORT', 5000))
-    WSGIServer(('', port), make_app()).serve_forever()
+
+    if '--debug' in sys.argv:
+        from werkzeug.serving import run_simple
+        run_simple('', port, app, use_debugger=True, use_reloader=True)
+    else:
+        from gevent.wsgi import WSGIServer
+        WSGIServer(('', port), app).serve_forever()
+
