@@ -2,29 +2,42 @@
 {% block styles %}
 {{ super() }}
 <link href="/static/css/prettyprint.css" rel="stylesheet" />
+<style>
+  .nav-tabs .badge {
+    float: right;
+  }
+</style>
 {% endblock %}
 
 {% block body %}
-<h2>Sources ({{ sources|length }})</h2>
-{% for source in sources %}
-<li><a href="{{ source }}">{{ source }}</a></li>
-{% endfor %}
+<div class="row">
+  <div class="span2">
+    <ul class="nav nav-tabs nav-stacked affix-top">
+      <li><a href="#sources">Sources <span class="badge badge-info">{{ sources|length }}</span></a></li>
+      <li><a href="#errors">Errors <span class="badge badge-important">{{ report.errors|length }}</span></a></li>
+      <li><a href="#warnings">Warnings <span class="badge badge-warning">{{ report.warnings|length }}</span></a></li>
+    </ul>
+  </div>
 
-<h2>Errors ({{ report.errors|length }})</h2>
-{% for error in report.errors %}
-<section>
-  <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
-    <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
-</section>
-{% else %}
-No errors!
-{% endfor %}
+  <div class="span9">
+    <h2 id="sources">Sources <span class="badge badge-info">{{ sources|length }}</span></h2>
+    {% for source in sources %}
+    <li><a href="{{ source }}">{{ source }}</a></li>
+    {% endfor %}
 
-<h2>Warnings ({{ report.warnings|length }})</h2>
-{% for error in report.warnings %}
-<section>
-  <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
-    <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
-</section>
-{% endfor %}
+    <h2 id="errors">Errors <span class="badge badge-important">{{ report.errors|length }}</span></h2>
+    {% for error in report.errors %}
+      <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
+      <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+    {% else %}
+    No errors!
+    {% endfor %}
+
+    <h2 id="warnings">Warnings <span class="badge badge-warning">{{ report.warnings|length }}</span></h2>
+    {% for error in report.warnings %}
+      <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
+      <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}
