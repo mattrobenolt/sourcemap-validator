@@ -1,26 +1,19 @@
 import os
 import re
+import sourcemap
 from urlparse import urljoin
 from functools import partial
 from operator import attrgetter, itemgetter
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.urls import url_decode
-from werkzeug.wsgi import SharedDataMiddleware
-from http import fetch_url, fetch_urls
-from base import Application
-import sourcemap
-from collections import namedtuple
 
-from gevent import monkey
-monkey.patch_all()
-
-
-BadToken = namedtuple('BadToken', ['token', 'expected', 'line', 'pre', 'post'])
-
-
-class ValidationError(Exception):
-    pass
+from validator.http import fetch_url, fetch_urls
+from validator.base import Application
+from validator.errors import (
+    ValidationError, UnableToFetchSource, UnableToFetchSourceMap,
+    SourceMapNotFound, InvalidSourceMapFormat)
+from validator.objects import BadToken
 
 
 def discover_sourcemap(result):
@@ -37,19 +30,19 @@ def discover_sourcemap(result):
 def sourcemap_from_url(url):
     js = fetch_url(url)
     if js is None:
-        raise ValidationError('Unable to fetch %r' % url.encode('utf8'))
+        raise UnableToFetchSource(url)
     make_absolute = partial(urljoin, url)
     smap_url = discover_sourcemap(js)
     if smap_url is None:
-        raise ValidationError('Unable to locate a SourceMap in %r' % url.encode('utf8'))
+        raise SourceMapNotFound(url)
     smap_url = make_absolute(smap_url)
     smap = fetch_url(smap_url)
     if smap is None:
-        raise ValidationError('Unable to fetch %r' % smap_url.encode('utf8'))
+        raise UnableToFetchSourceMap(smap_url)
     try:
         return sourcemap.loads(smap.body)
     except ValueError:
-        raise ValidationError('Invalid SourceMap format %r' % smap_url.encode('utf8'))
+        raise InvalidSourceMapFormat(smap_url)
 
 
 def sources_from_index(index, base):
@@ -85,6 +78,7 @@ def generate_report(base, index, sources):
                 pre_context = map(trim_prefix, pre_context)
                 post_context = map(trim_prefix, post_context)
                 line = trim_prefix(line)
+
             bad_token = BadToken(token, substring, line, pre_context, post_context)
 
             if token.name in line:
@@ -114,7 +108,7 @@ class Validator(Application):
             sources = sources_from_index(index, url)
             report = generate_report(url, index, sources)
         except ValidationError, e:
-            return self.render('error.html', {'error': e.message})
+            return self.render('error.html', {'error': e})
 
         context = {
             'report': report,
@@ -123,11 +117,14 @@ class Validator(Application):
         return self.render('report.html', context)
 
 
-def make_app():
+def make_app(with_static=True):
     app = Validator('templates')
-    return SharedDataMiddleware(app, {
-        '/static':  os.path.join(os.path.dirname(__file__), 'static')
-    })
+    if with_static:
+        from werkzeug.wsgi import SharedDataMiddleware
+        app = SharedDataMiddleware(app, {
+            '/static': os.path.join(os.path.dirname(__file__), 'static')
+        })
+    return app
 
 
 if __name__ == '__main__':
@@ -141,4 +138,6 @@ if __name__ == '__main__':
         run_simple('', port, app, use_debugger=True, use_reloader=True)
     else:
         from gevent.wsgi import WSGIServer
+        from gevent import monkey
+        monkey.patch_all()
         WSGIServer(('', port), app).serve_forever()

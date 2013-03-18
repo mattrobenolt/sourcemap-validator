@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Error</h1>
-<pre>{{ error }}</pre>
+<pre>{{ error.message }}</pre>
+{% if error.resolutions %}
+<ul>
+    {% for resolution in error.resolutions %}
+    <li>{{ resolution }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

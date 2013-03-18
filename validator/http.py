@@ -1,8 +1,8 @@
 from collections import namedtuple
+import sys
 import re
 import zlib
 import urllib2
-import gevent
 
 
 UrlResult = namedtuple('UrlResult', ['url', 'headers', 'body'])
@@ -20,7 +20,7 @@ def fetch_url(url, logger=None):
     """
     try:
         opener = urllib2.build_opener()
-        # opener.addheaders = [('User-Agent', 'Sentry/%s' % sentry.VERSION)]
+        opener.addheaders = [('User-Agent', 'THE SourceMap Validator/0.0')]
         req = opener.open(url)
         headers = req.headers
         body = req.read()
@@ -40,11 +40,13 @@ def fetch_url(url, logger=None):
             logger.error('Unable to fetch remote source for %r', url, exc_info=True)
         return None
 
-    result = UrlResult(url, headers, body)
-    return result
+    return UrlResult(url, headers, body)
 
 
 def fetch_urls(urls):
-    jobs = [gevent.spawn(fetch_url, url) for url in urls]
-    gevent.joinall(jobs)
-    return [job.value for job in jobs]
+    if 'gevent' in sys.modules:
+        gevent = sys.modules['gevent']
+        jobs = [gevent.spawn(fetch_url, url) for url in urls]
+        gevent.joinall(jobs)
+        return [job.value for job in jobs]
+    return map(fetch_url, urls)
