@@ -37,19 +37,19 @@ def discover_sourcemap(result):
 def sourcemap_from_url(url):
     js = fetch_url(url)
     if js is None:
-        raise ValidationError('Unable to fetch %r' % url)
+        raise ValidationError('Unable to fetch %r' % url.encode('utf8'))
     make_absolute = partial(urljoin, url)
     smap_url = discover_sourcemap(js)
     if smap_url is None:
-        raise ValidationError('Unable to locate a SourceMap in %r' % url)
+        raise ValidationError('Unable to locate a SourceMap in %r' % url.encode('utf8'))
     smap_url = make_absolute(smap_url)
     smap = fetch_url(smap_url)
     if smap is None:
-        raise ValidationError('Unable to fetch %r' % smap_url)
+        raise ValidationError('Unable to fetch %r' % smap_url.encode('utf8'))
     try:
         return sourcemap.loads(smap.body)
     except ValueError:
-        raise ValidationError('Invalid SourceMap format %r' % smap_url)
+        raise ValidationError('Invalid SourceMap format %r' % smap_url.encode('utf8'))
 
 
 def sources_from_index(index, base):
@@ -66,6 +66,7 @@ is_blank = lambda line: bool(len(line.strip()))
 def generate_report(base, index, sources):
     make_absolute = partial(urljoin, base)
     errors = []
+    warnings = []
     for token in index:
         if token.name is None:
             continue
@@ -84,9 +85,16 @@ def generate_report(base, index, sources):
                 pre_context = map(trim_prefix, pre_context)
                 post_context = map(trim_prefix, post_context)
                 line = trim_prefix(line)
-            errors.append(BadToken(token, substring, line, pre_context, post_context))
+            bad_token = BadToken(token, substring, line, pre_context, post_context)
 
-    return {'errors': errors, 'tokens': index}
+            if token.name in line:
+                # It at least matched the right line, so just capture a warning
+                # Note: Sourcemap compilers suck.
+                warnings.append(bad_token)
+            else:
+                errors.append(bad_token)
+
+    return {'errors': errors, 'warnings': warnings, 'tokens': index}
 
 
 class Validator(Application):
@@ -107,7 +115,12 @@ class Validator(Application):
             report = generate_report(url, index, sources)
         except ValidationError, e:
             return self.render('error.html', {'error': e.message})
-        return self.render('report.html', report)
+
+        context = {
+            'report': report,
+            'sources': sources.keys(),
+        }
+        return self.render('report.html', context)
 
 
 def make_app():
@@ -129,4 +142,3 @@ if __name__ == '__main__':
     else:
         from gevent.wsgi import WSGIServer
         WSGIServer(('', port), app).serve_forever()
-

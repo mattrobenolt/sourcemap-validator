@@ -35,8 +35,7 @@ def fetch_url(url, logger=None):
         except AttributeError:
             encoding = DEFAULT_ENCODING
         body = body.decode(encoding).rstrip('\n')
-    except Exception, e:
-        print e
+    except Exception:
         if logger:
             logger.error('Unable to fetch remote source for %r', url, exc_info=True)
         return None

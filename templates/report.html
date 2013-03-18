@@ -5,8 +5,23 @@
 {% endblock %}
 
 {% block body %}
-<h2>Errors</h2>
-{% for error in errors %}
+<h2>Sources ({{ sources|length }})</h2>
+{% for source in sources %}
+<li><a href="{{ source }}">{{ source }}</a></li>
+{% endfor %}
+
+<h2>Errors ({{ report.errors|length }})</h2>
+{% for error in report.errors %}
+<section>
+  <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
+    <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+</section>
+{% else %}
+No errors!
+{% endfor %}
+
+<h2>Warnings ({{ report.warnings|length }})</h2>
+{% for error in report.warnings %}
 <section>
   <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
     <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
