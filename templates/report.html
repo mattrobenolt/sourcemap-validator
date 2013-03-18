@@ -1,6 +1,6 @@
-<html>
-<head>
-    <title></title>
+{% extends "base.html" %}
+{% block styles %}
+{{ super() }}
     <style>
     ol {
         font-family: monospace;
@@ -21,8 +21,9 @@
         border: 1px solid #ccc;
     }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block body %}
 <h2>Errors</h2>
 {% for error in errors %}
 <li>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code> <ol start="{{ error.token.src_line - 3 }}">
@@ -34,5 +35,4 @@
 <li><pre>{{ line }}</pre></li>
 {% endfor %}</ol></li>
 {% endfor %}
-</body>
-</html>
+{% endblock %}

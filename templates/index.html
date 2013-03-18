@@ -1,3 +1,5 @@
+{% extends "base.html" %}
+{% block body %}
 <form action="/validate">
     <label>URL:</label><input name="url" /> <input type="submit" />
 </form>
@@ -7,3 +9,4 @@
     <li><a href="/validate?url=http://d3nslu0hdya83q.cloudfront.net/dist/1.0/raven.min.js">Raven.js</a></li>
     <li><a href="/validate?url=http://getsentry-cdn.s3.amazonaws.com/test/raven.min.js">Raven.js (with closure compiler)</a></li>
 </ul>
+{% endblock %}
