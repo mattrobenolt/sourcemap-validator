@@ -1,38 +1,15 @@
 {% extends "base.html" %}
 {% block styles %}
 {{ super() }}
-    <style>
-    ol {
-        font-family: monospace;
-        margin-left: 30px;
-    }
-    ol li {
-        margin: 0;
-        padding: 0;
-    }
-    ol li pre {
-        margin: 0;
-        padding: 0;
-    }
-    .culprit {
-        color: #f00;
-    }
-    code {
-        border: 1px solid #ccc;
-    }
-    </style>
+<link href="/static/css/prettyprint.css" rel="stylesheet" />
 {% endblock %}
 
 {% block body %}
 <h2>Errors</h2>
 {% for error in errors %}
-<li>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code> <ol start="{{ error.token.src_line - 3 }}">
-{% for line in error.pre %}
-<li><pre>{{ line }}</pre></li>
-{% endfor %}
-<li class="culprit"><pre>{{ error.line }}</pre></li>
-{% for line in error.post %}
-<li><pre>{{ line }}</pre></li>
-{% endfor %}</ol></li>
+<section>
+  <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
+    <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+</section>
 {% endfor %}
 {% endblock %}

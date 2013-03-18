@@ -1,8 +1,31 @@
 {% extends "base.html" %}
+{% block styles %}
+{{ super() }}
+<style>
+.jumbotron {
+    margin: 60px 0;
+    text-align: center;
+}
+.jumbotron h1 {
+    font-size: 72px;
+    line-height: 1;
+}
+.container {
+    width: 700px;
+}
+</style>
+{% endblock %}
 {% block body %}
-<form action="/validate">
-    <label>URL:</label><input name="url" /> <input type="submit" />
+<div class="jumbotron">
+<h1>lol sourcemaps</h1>
+<p class="lead">Sourcemaps are hard. Make sure you did it right.</p>
+<form action="/validate" class="form-inline">
+    <div class="input-append">
+        <input type="text" class="span6" name="url" placeholder="http://code.jquery.com/jquery-1.9.1.min.js" />
+        <button type="submit" class="btn">Validate</button>
+    </div>
 </form>
+</div>
 <h2>Examples</h2>
 <ul>
     <li><a href="/validate?url=http://code.jquery.com/jquery-1.9.1.min.js">jQuery</a></li>

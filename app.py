@@ -113,9 +113,8 @@ class Validator(Application):
 def make_app():
     app = Validator('templates')
     return SharedDataMiddleware(app, {
-            '/static':  os.path.join(os.path.dirname(__file__), 'static')
-        }
-    )
+        '/static':  os.path.join(os.path.dirname(__file__), 'static')
+    })
 
 
 if __name__ == '__main__':
