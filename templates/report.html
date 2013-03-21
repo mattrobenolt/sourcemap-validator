@@ -6,23 +6,43 @@
   .nav-tabs .badge {
     float: right;
   }
+  .nav-tabs {
+    top: 0;
+    margin-top: 20px;
+  }
+
+  .nav-stacked > .active > a {
+    /*color: #fff;*/
+    background-color: #eee;
+  }
+
+  #header { margin: 10px 0 0;}
 </style>
 {% endblock %}
 
 {% block body %}
+<div id="header" class="row">
+  <h1>Report</h1>
+  <h3><a href="{{ url }}" target="_blank">{{ url }}</a></h3>
+  {% if report.errors %}
+  <div class="alert alert-error">Fail. Check the <a href="#errors">errors</a> below. <i class="icon-thumbs-down"></i></div>
+  {% else %}
+  <div class="alert alert-success">Pass. Everything looks good! <i class="icon-thumbs-up"></i></div>
+  {% endif %}
+</div>
 <div class="row">
-  <div class="span2">
-    <ul class="nav nav-tabs nav-stacked affix-top">
+  <div id="nav" class="span2">
+    <ul class="nav nav-tabs nav-stacked affix-top span2" data-spy="affix" data-offset-top="175">
       <li><a href="#sources">Sources <span class="badge badge-info">{{ sources|length }}</span></a></li>
       <li><a href="#errors">Errors <span class="badge badge-important">{{ report.errors|length }}</span></a></li>
       <li><a href="#warnings">Warnings <span class="badge badge-warning">{{ report.warnings|length }}</span></a></li>
     </ul>
   </div>
 
-  <div class="span9">
+  <div class="span10">
     <h2 id="sources">Sources <span class="badge badge-info">{{ sources|length }}</span></h2>
     {% for source in sources %}
-    <li><a href="{{ source }}">{{ source }}</a></li>
+    <li><a href="{{ source }}" target="_blank">{{ source }}</a></li>
     {% endfor %}
 
     <h2 id="errors">Errors <span class="badge badge-important">{{ report.errors|length }}</span></h2>
@@ -40,4 +60,7 @@
     {% endfor %}
   </div>
 </div>
+
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
 {% endblock %}

@@ -112,6 +112,7 @@ class Validator(Application):
             return self.render('error.html', {'error': e})
 
         context = {
+            'url': url,
             'report': report,
             'sources': sources.keys(),
         }
