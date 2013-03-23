@@ -14,7 +14,7 @@ from validator.base import Application
 from validator.errors import (
     ValidationError, UnableToFetchSource, UnableToFetchSourceMap,
     SourceMapNotFound, InvalidSourceMapFormat)
-from validator.objects import BadToken
+from validator.objects import BadToken, SourceMap
 
 
 def discover_sourcemap(result):
@@ -41,7 +41,7 @@ def sourcemap_from_url(url):
     if smap is None:
         raise UnableToFetchSourceMap(smap_url)
     try:
-        return sourcemap.loads(smap.body)
+        return SourceMap(smap_url, sourcemap.loads(smap.body))
     except ValueError:
         raise InvalidSourceMapFormat(smap_url)
 
@@ -105,9 +105,9 @@ class Validator(Application):
     def validate(self, request):
         url = url_decode(request.environ['QUERY_STRING']).get('url')
         try:
-            index = sourcemap_from_url(url)
-            sources = sources_from_index(index, url)
-            report = generate_report(url, index, sources)
+            smap = sourcemap_from_url(url)
+            sources = sources_from_index(smap.index, url)
+            report = generate_report(url, smap.index, sources)
         except ValidationError, e:
             return self.render('error.html', {'error': e})
 
@@ -115,6 +115,8 @@ class Validator(Application):
             'url': url,
             'report': report,
             'sources': sources.keys(),
+            'sourcemap_url': smap.url,
+            'sourcemap': smap.index.raw,
         }
         return self.render('report.html', context)
 
