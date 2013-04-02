@@ -121,23 +121,31 @@ class Validator(Application):
         return self.render('report.html', context)
 
 
-def make_app(with_static=True):
+def make_app(with_static=True, with_sentry=False):
     app = Validator('templates')
     if with_static:
         from werkzeug.wsgi import SharedDataMiddleware
         app = SharedDataMiddleware(app, {
             '/static': os.path.join(os.path.dirname(__file__), 'static')
         })
+
+    if with_sentry:
+        from raven import Client
+        from raven.middleware import Sentry
+        app = Sentry(app, client=Client())
+
     return app
 
 
 if __name__ == '__main__':
     import sys
 
-    app = make_app()
+    is_debug = '--debug' in sys.argv
+
+    app = make_app(with_sentry=not is_debug)
     port = int(os.environ.get('PORT', 5000))
 
-    if '--debug' in sys.argv:
+    if is_debug:
         from werkzeug.serving import run_simple
         run_simple('', port, app, use_debugger=True, use_reloader=True)
     else:
