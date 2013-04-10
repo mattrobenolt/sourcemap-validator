@@ -2,11 +2,24 @@
 {% block title %}Libraries - SourceMap Validator{% endblock %}
 
 {% block body %}
-<h2>Totals</h2>
+<h1>Does it support SourceMaps yet?</h1>
+<p>The following libraries are currated from the popular public CDNs.</p>
+<div class="progress">
+  <div class="bar bar-success" data-toggle="tooltip" data-placement="bottom" title="0"></div>
+  <div class="bar bar-danger" data-toggle="tooltip" data-placement="bottom" title="0"></div>
+</div>
+<p id="loading"><em>Fetching list of libraries...</em></p>
 {% raw %}
 <script id="table-template" type="text/x-handlebars-template">
   <h3>{{title}}</h3>
   <table class="table">
+  <thead>
+    <tr>
+      <th class="header">Name</th>
+      <th class="header">URL</th>
+      <th class="header">Status</th>
+    </tr>
+  </thead>
   {{#each libs}}
     <tr id="lib_{{this.id}}">
       <td>{{this.[0]}}</td>
@@ -20,13 +33,16 @@
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script src="/static/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.5.2/jquery.tablesorter.min.js"></script>
 <script>
 $(function() {
   $.getJSON('/libraries.json', function(data) {
     var template = Handlebars.compile($('#table-template').html()),
-        $body = $('body > div'), $stats = $('h2'),
+        $body = $('body > div'), $success = $('.bar-success'), $fail = $('.bar-danger'),
         id = 0, urls = [], i, j, group,
         successes = 0, failures = 0, total = 0;
+
+    $('#loading').remove();
 
     for (i = 0; i<data.length; i++) {
       group = data[i];
@@ -61,7 +77,13 @@ $(function() {
     }
 
     function updateStats() {
-      $stats.text('Total: ' + successes + ' ' + failures + ' ' + total);
+      $success.css('width', (successes/total * 100) + '%').attr('title', successes);
+      $fail.css('width', (failures/total * 100) + '%').attr('title', failures);
+      if (successes + failures === total) {
+        $success.tooltip();
+        $fail.tooltip();
+        $('table').tablesorter();
+      }
     }
   });
 });
