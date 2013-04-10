@@ -9,9 +9,10 @@
   <div class="bar bar-danger" data-toggle="tooltip" data-placement="bottom" title="0"></div>
 </div>
 <p id="loading"><em>Fetching list of libraries...</em></p>
+<div id="body"></div>
 {% raw %}
 <script id="table-template" type="text/x-handlebars-template">
-  <h3>{{title}}</h3>
+  <h3><a href="{{url}}">{{title}} <i class="icon-share"></i></a></h3>
   <table class="table">
   <thead>
     <tr>
@@ -38,7 +39,7 @@
 $(function() {
   $.getJSON('/libraries.json', function(data) {
     var template = Handlebars.compile($('#table-template').html()),
-        $body = $('body > div'), $success = $('.bar-success'), $fail = $('.bar-danger'),
+        $body = $('#body'), $success = $('.bar-success'), $fail = $('.bar-danger'),
         id = 0, urls = [], i, j, group,
         successes = 0, failures = 0, total = 0;
 
@@ -60,15 +61,16 @@ $(function() {
     for (i = 0; i < total; i++) {
       (function(idx, url) {
         var $row = $('#lib_' + idx),
-            $status = $row.find('td.status');
-        $.getJSON('/validate.json?url=' + encodeURIComponent(url), function(data) {
+            $status = $row.find('td.status'),
+            encoded = encodeURIComponent(url);
+        $.getJSON('/validate.json?url=' + encoded, function(data) {
           if ('error' in data) {
             $row.addClass('error');
-            $status.text('fail');
+            $status.html('<a href="/validate?url=' + encoded + '" title="View Report">fail</a>');
             failures++;
           } else {
             $row.addClass('success');
-            $status.text('good');
+            $status.html('<a href="/validate?url=' + encoded + '" title="View Report">good</a>');
             successes++;
           }
           updateStats();

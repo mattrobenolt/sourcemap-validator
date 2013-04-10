@@ -64,10 +64,12 @@ def fetch_libs():
         {
             'title': 'Google CDN',
             'libs': google,
+            'url': 'https://developers.google.com/speed/libraries/devguide',
         },
         {
             'title': 'cdnjs.com',
             'libs': cdnjs,
+            'url': 'http://cdnjs.com/',
         }
     ]
 
