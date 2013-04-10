@@ -96,20 +96,35 @@ class Validator(Application):
     def get_urls(self):
         return Map([
             Rule('/', endpoint='index'),
-            Rule('/validate', endpoint='validate'),
+            Rule('/validate', endpoint='validate_html'),
+            Rule('/validate.json', endpoint='validate_json'),
         ])
 
     def index(self, request):
         return self.render('index.html')
 
-    def validate(self, request):
-        url = url_decode(request.environ['QUERY_STRING']).get('url')
+    def validate_html(self, request):
         try:
-            smap = sourcemap_from_url(url)
-            sources = sources_from_index(smap.index, url)
-            report = generate_report(url, smap.index, sources)
+            return self.render('report.html', self.validate(request))
         except ValidationError, e:
             return self.render('error.html', {'error': e})
+
+    def validate_json(self, request):
+        try:
+            data = self.validate(request)
+            # We can't encode the tokens, nor do we care
+            del data['report']['tokens']
+            # No need to return back the huge sourcemap
+            del data['sourcemap']
+            return self.json(data)
+        except ValidationError, e:
+            return self.json({'error': e})
+
+    def validate(self, request):
+        url = url_decode(request.environ['QUERY_STRING']).get('url')
+        smap = sourcemap_from_url(url)
+        sources = sources_from_index(smap.index, url)
+        report = generate_report(url, smap.index, sources)
 
         context = {
             'url': url,
@@ -118,7 +133,7 @@ class Validator(Application):
             'sourcemap_url': smap.url,
             'sourcemap': smap.index.raw,
         }
-        return self.render('report.html', context)
+        return context
 
 
 def make_app(with_static=True, with_sentry=False):
