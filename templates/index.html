@@ -14,16 +14,6 @@
 .container {
     width: 750px;
 }
-.social {
-    margin: 30px auto 0;
-    width: 480px;
-    text-align: center;
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
-}
-.social > p {
-    padding-top: 10px;
-}
 </style>
 {% endblock %}
 {% block body %}
@@ -44,12 +34,4 @@
     <li><a href="/validate?url=http%3A%2F%2Fd3nslu0hdya83q.cloudfront.net%2Fdist%2F1.0%2Fraven.min.js">Raven.js</a></li>
     <li><a href="/validate?url=http%3A%2F%2Fgetsentry-cdn.s3.amazonaws.com%2Ftest%2Fraven.min.js">Raven.js (with closure compiler)</a></li>
 </ul>
-
-<div class="row social">
-<iframe src="http://ghbtns.com/github-btn.html?user=mattrobenolt&repo=sourcemap-validator&type=watch&count=true"
-  allowtransparency="true" frameborder="0" scrolling="0" width="100" height="20"></iframe>
-<iframe src="http://ghbtns.com/github-btn.html?user=mattrobenolt&repo=sourcemap-validator&type=fork&count=true"
-  allowtransparency="true" frameborder="0" scrolling="0" width="100" height="20"></iframe>
-  <p>A <a href="https://github.com/mattrobenolt">Matt Robenolt</a> project.</p>
-</div>
 {% endblock %}
