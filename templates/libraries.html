@@ -1,17 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Libraries - SourceMap Validator{% endblock %}
-{% block styles %}
-{{ super() }}
-<link href="/static/css/prettyprint.css" rel="stylesheet" />
-<style>
-  .fail {
-    background-color: #fdd;
-  }
-  .pass {
-    background-color: #dfd;
-  }
-</style>
-{% endblock %}
 
 {% block body %}
 <h2>Totals</h2>
@@ -59,11 +47,11 @@ $(function() {
             $status = $row.find('td.status');
         $.getJSON('/validate.json?url=' + encodeURIComponent(url), function(data) {
           if ('error' in data) {
-            $row.addClass('fail');
+            $row.addClass('error');
             $status.text('fail');
             failures++;
           } else {
-            $row.addClass('pass');
+            $row.addClass('success');
             $status.text('good');
             successes++;
           }
