@@ -59,7 +59,12 @@ def fetch_urls(urls):
 
 def fetch_libs():
     cdnjs = get_cdnjs_libs()
+    google = get_google_libs()
     return [
+        {
+            'title': 'Google CDN',
+            'libs': google,
+        },
         {
             'title': 'cdnjs.com',
             'libs': cdnjs,
@@ -71,4 +76,11 @@ def get_cdnjs_libs():
     packages = simplejson.loads(fetch_url('http://cdnjs.com/packages.json').body)['packages']
     packages = filter(lambda pkg: pkg['filename'].endswith('.js'), packages)
     make_url = lambda pkg: (pkg['name'], 'http://cdnjs.cloudflare.com/ajax/libs/%(name)s/%(version)s/%(filename)s' % pkg)
+    return map(make_url, packages)
+
+
+def get_google_libs():
+    soup = BeautifulSoup(fetch_url('https://developers.google.com/speed/libraries/devguide').body)
+    packages = soup.find_all('dl')[3:]
+    make_url = lambda pkg: (pkg.dt.text, 'http:' + BeautifulSoup(pkg.dd.code.text).script['src'])
     return map(make_url, packages)
