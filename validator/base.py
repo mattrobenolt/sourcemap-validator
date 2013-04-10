@@ -1,6 +1,7 @@
 import simplejson
 from werkzeug.wrappers import Request, Response
 from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.urls import url_decode
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -21,8 +22,11 @@ class Application(object):
         t = self.jinja_env.get_template(template_name)
         return Response(t.render(context), mimetype='text/html')
 
-    def json(self, data):
-        return Response(simplejson.dumps(data, default=json_encoder), mimetype='application/json')
+    def json(self, data, callback=None):
+        data = simplejson.dumps(data, default=json_encoder)
+        if callback:
+            data = '%s(%s)'% (callback, data)
+        return Response(data, mimetype='application/json')
 
     def error_404(self):
         response = self.render('404.html')
@@ -31,6 +35,7 @@ class Application(object):
 
     def dispatch_request(self, request):
         adapter = self.routes.bind_to_environ(request.environ)
+        request.GET = url_decode(request.environ['QUERY_STRING'])
         try:
             endpoint, values = adapter.match()
             return getattr(self, endpoint)(request, **values)

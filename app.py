@@ -7,9 +7,8 @@ from functools import partial
 from operator import attrgetter, itemgetter
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
-from werkzeug.urls import url_decode
 
-from validator.http import fetch_url, fetch_urls
+from validator.http import fetch_url, fetch_urls, fetch_libs
 from validator.base import Application
 from validator.errors import (
     ValidationError, UnableToFetchSource, UnableToFetchSourceMap,
@@ -98,10 +97,19 @@ class Validator(Application):
             Rule('/', endpoint='index'),
             Rule('/validate', endpoint='validate_html'),
             Rule('/validate.json', endpoint='validate_json'),
+            Rule('/libraries', endpoint='libraries_html'),
+            Rule('/libraries.json', endpoint='libraries_json'),
         ])
 
     def index(self, request):
         return self.render('index.html')
+
+    def libraries_html(self, request):
+        return self.render('libraries.html')
+
+    def libraries_json(self, request):
+        libs = fetch_libs()
+        return self.json(libs, callback=request.GET.get('callback'))
 
     def validate_html(self, request):
         try:
@@ -110,18 +118,19 @@ class Validator(Application):
             return self.render('error.html', {'error': e})
 
     def validate_json(self, request):
+        callback = request.GET.get('callback')
         try:
             data = self.validate(request)
             # We can't encode the tokens, nor do we care
             del data['report']['tokens']
             # No need to return back the huge sourcemap
             del data['sourcemap']
-            return self.json(data)
+            return self.json(data, callback=callback)
         except ValidationError, e:
-            return self.json({'error': e})
+            return self.json({'error': e}, callback=callback)
 
     def validate(self, request):
-        url = url_decode(request.environ['QUERY_STRING']).get('url')
+        url = request.GET.get('url')
         smap = sourcemap_from_url(url)
         sources = sources_from_index(smap.index, url)
         report = generate_report(url, smap.index, sources)

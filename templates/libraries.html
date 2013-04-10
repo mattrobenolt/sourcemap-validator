@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Libraries - SourceMap Validator{% endblock %}
+{% block styles %}
+{{ super() }}
+<link href="/static/css/prettyprint.css" rel="stylesheet" />
+<style>
+  .fail {
+    background-color: #fdd;
+  }
+  .pass {
+    background-color: #dfd;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<h2>Totals</h2>
+{% raw %}
+<script id="table-template" type="text/x-handlebars-template">
+  <h3>{{title}}</h3>
+  <table class="table">
+  {{#each libs}}
+    <tr id="lib_{{this.id}}">
+      <td>{{this.[0]}}</td>
+      <td>{{this.[1]}}</td>
+      <td class="status">...</td>
+    <tr>
+  {{/each}}
+  </table>
+</script>
+{% endraw %}
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.min.js"></script>
+<script>
+$(function() {
+  $.getJSON('/libraries.json', function(data) {
+    var template = Handlebars.compile($('#table-template').html()),
+        $body = $('body > div'), $stats = $('h2'),
+        id = 0, urls = [], i, j, group,
+        successes = 0, failures = 0, total = 0;
+
+    for (i = 0; i<data.length; i++) {
+      group = data[i];
+      for (j = 0; j < group.libs.length; j++) {
+        urls[id] = group.libs[j][1];
+        group.libs[j].id = id;
+        id++;
+      }
+      $body.append(template(data[i]));
+    }
+
+    total = urls.length;
+
+    // lol, here we go
+    for (i = 0; i < total; i++) {
+      (function(idx, url) {
+        var $row = $('#lib_' + idx),
+            $status = $row.find('td.status');
+        $.getJSON('/validate.json?url=' + encodeURIComponent(url), function(data) {
+          if ('error' in data) {
+            $row.addClass('fail');
+            $status.text('fail');
+            failures++;
+          } else {
+            $row.addClass('pass');
+            $status.text('good');
+            successes++;
+          }
+          updateStats();
+        });
+      }(i, urls[i]));
+    }
+
+    function updateStats() {
+      $stats.text('Total: ' + successes + ' ' + failures + ' ' + total);
+    }
+  });
+});
+</script>
+{% endblock %}
