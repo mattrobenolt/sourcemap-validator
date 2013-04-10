@@ -66,11 +66,11 @@ $(function() {
         $.getJSON('/validate.json?url=' + encoded, function(data) {
           if ('error' in data) {
             $row.addClass('error');
-            $status.html('<a href="/validate?url=' + encoded + '" title="View Report">fail</a>');
+            $status.html('<strong><a href="/validate?url=' + encoded + '" title="View Report">Fail</a></strong>');
             failures++;
           } else {
             $row.addClass('success');
-            $status.html('<a href="/validate?url=' + encoded + '" title="View Report">good</a>');
+            $status.html('<strong><a href="/validate?url=' + encoded + '" title="View Report">Pass</a></strong>');
             successes++;
           }
           updateStats();
