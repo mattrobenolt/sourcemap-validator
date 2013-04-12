@@ -58,8 +58,15 @@ def fetch_urls(urls):
 
 
 def fetch_libs():
-    cdnjs = get_cdnjs_libs()
-    google = get_google_libs()
+    if 'gevent' in sys.modules:
+        gevent = sys.modules['gevent']
+        jobs = [gevent.spawn(get_cdnjs_libs), gevent.spawn(get_google_libs)]
+        gevent.joinall(jobs)
+        cdnjs = jobs[0].value
+        google = jobs[1].value
+    else:
+        cdnjs = get_cdnjs_libs()
+        google = get_google_libs()
     return [
         {
             'title': 'Google CDN',
