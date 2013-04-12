@@ -174,6 +174,7 @@ if __name__ == '__main__':
         run_simple('', port, app, use_debugger=True, use_reloader=True)
     else:
         from gevent.wsgi import WSGIServer
+        from gevent.pool import Pool
         from gevent import monkey
         monkey.patch_all()
-        WSGIServer(('', port), app).serve_forever()
+        WSGIServer(('', port), app, spawn=Pool(50)).serve_forever()
