@@ -64,7 +64,7 @@ $(function() {
             $status = $row.find('td.status'),
             encoded = encodeURIComponent(url);
         $.getJSON('/validate.json?url=' + encoded, function(data) {
-          if ('error' in data) {
+          if (data.report.errors.length) {
             $row.addClass('error');
             $status.html('<strong><a href="/validate?url=' + encoded + '" title="View Report">Fail</a></strong>');
             failures++;

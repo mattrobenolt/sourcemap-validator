@@ -79,40 +79,36 @@ def generate_report(base, smap, sources):
         if end_with_newline:
             bad_lines += 1
 
-    try:
-        for token in smap.index:
-            if token.name is None:
-                continue
-            if token.dst_line < bad_lines:
-                # lol, the token is referencing a line that is a comment. Derp.
-                raise BrokenComment(token)
-            src = sources[make_absolute(token.src)]
-            line = src[token.src_line]
-            start = token.src_col
-            end = start + len(token.name)
-            substring = line[start:end]
-            if substring != token.name:
-                pre_context = src[token.src_line - 3:token.src_line]
-                post_context = src[token.src_line + 1:token.src_line + 4]
-                all_lines = pre_context + post_context + [line]
-                common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
-                if common_prefix > 3:
-                    trim_prefix = itemgetter(slice(common_prefix, None, None))
-                    pre_context = map(trim_prefix, pre_context)
-                    post_context = map(trim_prefix, post_context)
-                    line = trim_prefix(line)
+    for token in smap.index:
+        if token.name is None:
+            continue
+        if token.dst_line < bad_lines:
+            # lol, the token is referencing a line that is a comment. Derp.
+            raise BrokenComment(token)
+        src = sources[make_absolute(token.src)]
+        line = src[token.src_line]
+        start = token.src_col
+        end = start + len(token.name)
+        substring = line[start:end]
+        if substring != token.name:
+            pre_context = src[token.src_line - 3:token.src_line]
+            post_context = src[token.src_line + 1:token.src_line + 4]
+            all_lines = pre_context + post_context + [line]
+            common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
+            if common_prefix > 3:
+                trim_prefix = itemgetter(slice(common_prefix, None, None))
+                pre_context = map(trim_prefix, pre_context)
+                post_context = map(trim_prefix, post_context)
+                line = trim_prefix(line)
 
-                bad_token = BadToken(token, substring, line, pre_context, post_context)
+            bad_token = BadToken(token, substring, line, pre_context, post_context)
 
-                if token.name in line:
-                    # It at least matched the right line, so just capture a warning
-                    # Note: Sourcemap compilers suck.
-                    warnings.append(bad_token)
-                else:
-                    errors.append(bad_token)
-    except BrokenComment, e:
-        errors = [e]
-        warnings = []
+            if token.name in line:
+                # It at least matched the right line, so just capture a warning
+                # Note: Sourcemap compilers suck.
+                warnings.append(bad_token)
+            else:
+                errors.append(bad_token)
 
     return {'errors': errors, 'warnings': warnings, 'tokens': smap.index}
 
@@ -138,35 +134,41 @@ class Validator(Application):
         return self.json(libs, callback=request.GET.get('callback'))
 
     def validate_html(self, request):
-        try:
-            return self.render('report.html', self.validate(request))
-        except ValidationError, e:
-            return self.render('error.html', {'error': e})
+        return self.render('report.html', self.validate(request))
 
     def validate_json(self, request):
         callback = request.GET.get('callback')
         try:
             data = self.validate(request)
             # We can't encode the tokens, nor do we care
-            del data['report']['tokens']
-            # No need to return back the huge sourcemap
-            del data['sourcemap']
+            try:
+                del data['report']['tokens']
+            except KeyError:
+                pass
             return self.json(data, callback=callback)
         except ValidationError, e:
             return self.json({'error': e}, callback=callback)
 
     def validate(self, request):
         url = request.GET.get('url')
-        smap = sourcemap_from_url(url)
-        sources = sources_from_index(smap.index, url)
-        report = generate_report(url, smap, sources)
+        smap = None
+        sources = {}
+        try:
+            smap = sourcemap_from_url(url)
+            sources = sources_from_index(smap.index, url)
+            report = generate_report(url, smap, sources)
+        except ValidationError, e:
+            report = {
+                'errors': [e],
+                'warnings': [],
+            }
+            report['index'] = getattr(smap, 'index', None)
 
         context = {
             'url': url,
             'report': report,
             'sources': sources.keys(),
-            'sourcemap_url': smap.url,
-            'sourcemap': smap.index.raw,
+            'sourcemap_url': getattr(smap, 'url', None),
         }
         return context
 

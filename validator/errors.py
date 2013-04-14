@@ -23,12 +23,12 @@ class UnableToFetchSourceMap(UnableToFetchSource):
 
 class SourceMapNotFound(ValidationError):
     resolutions = (
-        '//@ sourceMappingURL=',
-        'SourceMap header'
+        'Add a <code>//@ sourceMappingURL=</code> declaration',
+        'Add a SourceMap HTTP response header'
     )
 
     def __init__(self, url):
-        message = "Unable to locate a SourceMap in '%s'" % url
+        message = "Unable to locate a SourceMap in <code>%s</code>" % url
         super(SourceMapNotFound, self).__init__(message)
 
 
