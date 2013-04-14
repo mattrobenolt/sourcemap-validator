@@ -5,6 +5,7 @@ class BadToken(object):
         self.line = line
         self.pre = pre
         self.post = post
+        self.start = max(0, token.src_line - len(pre))
 
     def __json__(self):
         json = self.__dict__.copy()

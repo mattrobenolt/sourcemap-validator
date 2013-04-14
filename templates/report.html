@@ -56,7 +56,7 @@
           {% endfor %}
       {% else %}
         <h4>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h4>
-        <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+        <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.start }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
       {% endif %}
     {% else %}
     No errors!
@@ -65,7 +65,7 @@
     <h2 id="warnings">Warnings <span class="badge badge-warning">{{ report.warnings|length }}</span></h2>
     {% for error in report.warnings %}
       <h4>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h4>
-      <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+      <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.start }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
     {% endfor %}
   </div>
 </div>

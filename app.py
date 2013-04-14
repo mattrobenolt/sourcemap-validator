@@ -91,21 +91,27 @@ def generate_report(base, smap, sources):
         end = start + len(token.name)
         substring = line[start:end]
         if substring != token.name:
-            pre_context = src[token.src_line - 3:token.src_line]
-            post_context = src[token.src_line + 1:token.src_line + 4]
-            all_lines = pre_context + post_context + [line]
-            common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
-            if common_prefix > 3:
-                trim_prefix = itemgetter(slice(common_prefix, None, None))
-                pre_context = map(trim_prefix, pre_context)
-                post_context = map(trim_prefix, post_context)
-                line = trim_prefix(line)
+            if len(line) > 200:
+                # This is a good guess that the source file is minified too
+                pre_context = []
+                post_context = []
+                line = line[token.src_col - 5:token.src_col + 50]
+            else:
+                pre_context = src[token.src_line - 3:token.src_line]
+                post_context = src[token.src_line + 1:token.src_line + 4]
+                all_lines = pre_context + post_context + [line]
+                common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
+                if common_prefix > 3:
+                    trim_prefix = itemgetter(slice(common_prefix, None, None))
+                    pre_context = map(trim_prefix, pre_context)
+                    post_context = map(trim_prefix, post_context)
+                    line = trim_prefix(line)
 
             bad_token = BadToken(token, substring, line, pre_context, post_context)
 
             if token.name in line:
                 # It at least matched the right line, so just capture a warning
-                # Note: Sourcemap compilers suck.
+                # Note: SourceMap compilers suck.
                 warnings.append(bad_token)
             else:
                 errors.append(bad_token)
