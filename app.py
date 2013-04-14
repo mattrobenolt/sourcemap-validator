@@ -62,11 +62,17 @@ def generate_report(base, smap, sources):
     warnings = []
     minified = smap.minified.body
 
+    # Here, we're checking out many lines at the top of the minified
+    # source are a part of a comment.
+    # This is important because people like to inject a comment at the top
+    # after generating their SourceMap, fucking everything else up
     try:
         top_comment = COMMENT_RE.match(minified).groups()[0]
     except (AttributeError, TypeError):
+        # There wasn't a comment at all, so ignore everything
         bad_lines = 0
     else:
+        # If the comment ends in a newline, we can ignore that whole line
         end_with_newline = top_comment.endswith('\n')
         top_comment = top_comment.splitlines()
         bad_lines = len(top_comment) - 1
@@ -78,6 +84,7 @@ def generate_report(base, smap, sources):
             if token.name is None:
                 continue
             if token.dst_line < bad_lines:
+                # lol, the token is referencing a line that is a comment. Derp.
                 raise BrokenComment(token)
             src = sources[make_absolute(token.src)]
             line = src[token.src_line]
