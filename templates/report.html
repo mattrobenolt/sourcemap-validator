@@ -49,15 +49,22 @@
 
     <h2 id="errors">Errors <span class="badge badge-important">{{ report.errors|length }}</span></h2>
     {% for error in report.errors %}
-      <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
+      {% if error.message %}
+      <h4>{{ error.message }}</h4>
+      {% for resolution in error.resolutions %}
+      <li>{{ resolution }}</li>
+      {% endfor %}
+      {% else %}
+      <h4>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h4>
       <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
+      {% endif %}
     {% else %}
     No errors!
     {% endfor %}
 
     <h2 id="warnings">Warnings <span class="badge badge-warning">{{ report.warnings|length }}</span></h2>
     {% for error in report.warnings %}
-      <h3>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h3>
+      <h4>In <code>{{ error.token.src }}</code>: Expected <code>{{ error.token.name }}</code>, but found <code>{{ error.expected }}</code></h4>
       <pre class="prettyprint linenums"><ol class="linenums" start="{{ error.token.src_line - 3 }}">{% for line in error.pre %}<li>{{ line }}</li>{% endfor %}<li class="culprit"><span>{{ error.line }}</span></li>{% for line in error.post %}<li>{{ line }}</li>{% endfor %}</ol></pre>
     {% endfor %}
   </div>

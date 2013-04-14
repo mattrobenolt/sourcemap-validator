@@ -4,15 +4,14 @@ import re
 import sourcemap
 from urlparse import urljoin
 from functools import partial
-from operator import attrgetter, itemgetter
-from werkzeug.wrappers import Request, Response
+from operator import itemgetter
 from werkzeug.routing import Map, Rule
 
 from validator.http import fetch_url, fetch_urls, fetch_libs
 from validator.base import Application
 from validator.errors import (
     ValidationError, UnableToFetchSource, UnableToFetchSourceMap,
-    SourceMapNotFound, InvalidSourceMapFormat)
+    SourceMapNotFound, InvalidSourceMapFormat, BrokenComment)
 from validator.objects import BadToken, SourceMap
 
 
@@ -40,7 +39,7 @@ def sourcemap_from_url(url):
     if smap is None:
         raise UnableToFetchSourceMap(smap_url)
     try:
-        return SourceMap(smap_url, sourcemap.loads(smap.body))
+        return SourceMap(js, smap_url, sourcemap.loads(smap.body))
     except ValueError:
         raise InvalidSourceMapFormat(smap_url)
 
@@ -51,44 +50,64 @@ def sources_from_index(index, base):
     return {s.url: s.body.splitlines() for s in sources}
 
 
+COMMENT_RE = re.compile(r'^(/\*.+?\*/\n?)', re.M | re.S)
 WHITESPACE_RE = re.compile(r'^\s*')
 prefix_length = lambda line: len(WHITESPACE_RE.match(line).group())
 is_blank = lambda line: bool(len(line.strip()))
 
 
-def generate_report(base, index, sources):
+def generate_report(base, smap, sources):
     make_absolute = partial(urljoin, base)
     errors = []
     warnings = []
-    for token in index:
-        if token.name is None:
-            continue
-        src = sources[make_absolute(token.src)]
-        line = src[token.src_line]
-        start = token.src_col
-        end = start + len(token.name)
-        substring = line[start:end]
-        if substring != token.name:
-            pre_context = src[token.src_line - 3:token.src_line]
-            post_context = src[token.src_line + 1:token.src_line + 4]
-            all_lines = pre_context + post_context + [line]
-            common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
-            if common_prefix > 3:
-                trim_prefix = itemgetter(slice(common_prefix, None, None))
-                pre_context = map(trim_prefix, pre_context)
-                post_context = map(trim_prefix, post_context)
-                line = trim_prefix(line)
+    minified = smap.minified.body
 
-            bad_token = BadToken(token, substring, line, pre_context, post_context)
+    try:
+        top_comment = COMMENT_RE.match(minified).groups()[0]
+    except (AttributeError, TypeError):
+        bad_lines = 0
+    else:
+        end_with_newline = top_comment.endswith('\n')
+        top_comment = top_comment.splitlines()
+        bad_lines = len(top_comment) - 1
+        if end_with_newline:
+            bad_lines += 1
 
-            if token.name in line:
-                # It at least matched the right line, so just capture a warning
-                # Note: Sourcemap compilers suck.
-                warnings.append(bad_token)
-            else:
-                errors.append(bad_token)
+    try:
+        for token in smap.index:
+            if token.name is None:
+                continue
+            if token.dst_line < bad_lines:
+                raise BrokenComment(token)
+            src = sources[make_absolute(token.src)]
+            line = src[token.src_line]
+            start = token.src_col
+            end = start + len(token.name)
+            substring = line[start:end]
+            if substring != token.name:
+                pre_context = src[token.src_line - 3:token.src_line]
+                post_context = src[token.src_line + 1:token.src_line + 4]
+                all_lines = pre_context + post_context + [line]
+                common_prefix = reduce(min, map(prefix_length, filter(is_blank, all_lines)))
+                if common_prefix > 3:
+                    trim_prefix = itemgetter(slice(common_prefix, None, None))
+                    pre_context = map(trim_prefix, pre_context)
+                    post_context = map(trim_prefix, post_context)
+                    line = trim_prefix(line)
 
-    return {'errors': errors, 'warnings': warnings, 'tokens': index}
+                bad_token = BadToken(token, substring, line, pre_context, post_context)
+
+                if token.name in line:
+                    # It at least matched the right line, so just capture a warning
+                    # Note: Sourcemap compilers suck.
+                    warnings.append(bad_token)
+                else:
+                    errors.append(bad_token)
+    except BrokenComment, e:
+        errors = [e]
+        warnings = []
+
+    return {'errors': errors, 'warnings': warnings, 'tokens': smap.index}
 
 
 class Validator(Application):
@@ -133,7 +152,7 @@ class Validator(Application):
         url = request.GET.get('url')
         smap = sourcemap_from_url(url)
         sources = sources_from_index(smap.index, url)
-        report = generate_report(url, smap.index, sources)
+        report = generate_report(url, smap, sources)
 
         context = {
             'url': url,

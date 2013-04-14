@@ -16,8 +16,6 @@ DEFAULT_ENCODING = 'utf-8'
 def fetch_url(url, logger=None):
     """
     Pull down a URL, returning a UrlResult object.
-
-    Attempts to fetch from the cache.
     """
     try:
         opener = urllib2.build_opener()

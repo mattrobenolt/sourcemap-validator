@@ -13,8 +13,10 @@ class BadToken(object):
 
 
 class SourceMap(object):
-    def __init__(self, url, index):
-        self.url, self.index = url, index
+    def __init__(self, minified, url, index):
+        self.minified, self.url, self.index = minified, url, index
 
     def __json__(self):
-        return self.__dict__
+        json = self.__dict__.copy()
+        del json['minified']
+        return json
