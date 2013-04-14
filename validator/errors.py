@@ -11,7 +11,7 @@ class UnableToFetchSource(ValidationError):
     )
 
     def __init__(self, url):
-        message = "Unable to fetch '%s'" % url
+        message = "Unable to fetch <code>%s</code>" % url
         super(UnableToFetchSource, self).__init__(message)
 
 
@@ -38,7 +38,7 @@ class InvalidSourceMapFormat(ValidationError):
     )
 
     def __init__(self, url):
-        message = "Invalid SourceMap format '%s'" % url
+        message = "Invalid SourceMap format <code>%s</code>" % url
         super(InvalidSourceMapFormat, self).__init__(message)
 
 
