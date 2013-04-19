@@ -5,20 +5,32 @@ class ValidationError(Exception):
         return {'message': self.message, 'resolutions': self.resolutions}
 
 
-class UnableToFetchSource(ValidationError):
+class UnableToFetch(ValidationError):
+    def __init__(self, url):
+        message = "Unable to fetch <code>%s</code>" % url
+        super(UnableToFetch, self).__init__(message)
+
+
+class UnableToFetchMinified(UnableToFetch):
     resolutions = (
         'Is your url correct?',
     )
 
-    def __init__(self, url):
-        message = "Unable to fetch <code>%s</code>" % url
-        super(UnableToFetchSource, self).__init__(message)
 
-
-class UnableToFetchSourceMap(UnableToFetchSource):
+class UnableToFetchSourceMap(UnableToFetch):
     resolutions = (
         'SourceMap declaration found, but could not load the file.',
     )
+
+
+class UnableToFetchSources(ValidationError):
+    def __init__(self, smap_url, urls):
+        message = "Unable to fetch sources in <code>%s</code>" % smap_url
+        resolutions = [
+            "Error: <a href='%s'>%s</a> (%d)" % (u.url, u.url, u.status_code)
+            for u in urls]
+        self.resolutions = tuple(resolutions)
+        super(UnableToFetchSources, self).__init__(message)
 
 
 class SourceMapNotFound(ValidationError):

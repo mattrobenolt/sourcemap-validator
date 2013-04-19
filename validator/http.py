@@ -7,7 +7,7 @@ import simplejson
 from bs4 import BeautifulSoup
 
 
-UrlResult = namedtuple('UrlResult', ['url', 'headers', 'body'])
+UrlResult = namedtuple('UrlResult', ['url', 'headers', 'body', 'status_code'])
 
 CHARSET_RE = re.compile(r'charset=(\S+)')
 DEFAULT_ENCODING = 'utf-8'
@@ -42,12 +42,10 @@ def fetch_url(url, logger=None):
             except AttributeError:
                 encoding = DEFAULT_ENCODING
         body = body.decode(encoding).rstrip('\n')
-    except Exception:
-        if logger:
-            logger.error('Unable to fetch remote source for %r', url, exc_info=True)
-        return None
+    except urllib2.HTTPError, e:
+        return UrlResult(url, None, None, e.code)
 
-    return UrlResult(url, headers, body)
+    return UrlResult(url, headers, body, 200)
 
 
 def fetch_urls(urls):

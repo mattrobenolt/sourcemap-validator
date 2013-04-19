@@ -10,8 +10,9 @@ from werkzeug.routing import Map, Rule
 from validator.http import fetch_url, fetch_urls, fetch_libs
 from validator.base import Application
 from validator.errors import (
-    ValidationError, UnableToFetchSource, UnableToFetchSourceMap,
-    SourceMapNotFound, InvalidSourceMapFormat, BrokenComment)
+    ValidationError, UnableToFetchMinified, UnableToFetchSourceMap,
+    UnableToFetchSources, SourceMapNotFound, InvalidSourceMapFormat,
+    BrokenComment)
 from validator.objects import BadToken, SourceMap
 
 
@@ -29,7 +30,7 @@ def discover_sourcemap(result):
 def sourcemap_from_url(url):
     js = fetch_url(url)
     if js is None:
-        raise UnableToFetchSource(url)
+        raise UnableToFetchMinified(url)
     make_absolute = partial(urljoin, url)
     smap_url = discover_sourcemap(js)
     if smap_url is None:
@@ -44,9 +45,13 @@ def sourcemap_from_url(url):
         raise InvalidSourceMapFormat(smap_url)
 
 
-def sources_from_index(index, base):
+def sources_from_index(smap, base):
+    index = smap.index
     make_absolute = partial(urljoin, base)
     sources = fetch_urls(map(make_absolute, index.sources))
+    missed_sources = filter(lambda s: s.body is None, sources)
+    if missed_sources:
+        raise UnableToFetchSources(smap.url, missed_sources)
     return {s.url: s.body.splitlines() for s in sources}
 
 
@@ -161,7 +166,7 @@ class Validator(Application):
         sources = {}
         try:
             smap = sourcemap_from_url(url)
-            sources = sources_from_index(smap.index, url)
+            sources = sources_from_index(smap, url)
             report = generate_report(url, smap, sources)
         except ValidationError, e:
             report = {
