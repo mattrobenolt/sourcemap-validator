@@ -29,7 +29,7 @@ def discover_sourcemap(result):
 
 def sourcemap_from_url(url):
     js = fetch_url(url)
-    if js is None:
+    if js.status_code != 200:
         raise UnableToFetchMinified(url)
     make_absolute = partial(urljoin, url)
     smap_url = discover_sourcemap(js)

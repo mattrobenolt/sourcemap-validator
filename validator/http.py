@@ -44,6 +44,8 @@ def fetch_url(url, logger=None):
         body = body.decode(encoding).rstrip('\n')
     except urllib2.HTTPError, e:
         return UrlResult(url, None, None, e.code)
+    except Exception:
+        return UrlResult(url, None, None, 0)
 
     return UrlResult(url, headers, body, 200)
 
