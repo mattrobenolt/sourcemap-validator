@@ -37,7 +37,7 @@ def sourcemap_from_url(url):
         raise SourceMapNotFound(url)
     smap_url = make_absolute(smap_url)
     smap = fetch_url(smap_url)
-    if smap is None:
+    if smap.status_code != 200:
         raise UnableToFetchSourceMap(smap_url)
     try:
         return SourceMap(js, smap_url, sourcemap.loads(smap.body))
