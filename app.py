@@ -93,7 +93,7 @@ def generate_report(base, smap, sources):
         src = sources[make_absolute(token.src)]
         line = src[token.src_line]
         start = token.src_col
-        end = start + len(token.name)
+        end = start + len(str(token.name))
         substring = line[start:end]
         if substring != token.name:
             if len(line) > 200:
