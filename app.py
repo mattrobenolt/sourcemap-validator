@@ -121,7 +121,8 @@ def generate_report(base, smap, sources):
             else:
                 errors.append(bad_token)
 
-    return {'errors': errors, 'warnings': warnings, 'tokens': smap.index}
+    # Cap results to 1000 each. Anything more than that is just silly
+    return {'errors': errors[:1000], 'warnings': warnings[:1000], 'tokens': smap.index}
 
 
 class Validator(Application):
