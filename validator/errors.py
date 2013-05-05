@@ -63,3 +63,13 @@ class BrokenComment(ValidationError):
     def __init__(self, token):
         message = "Broken Minification"
         super(BrokenComment, self).__init__(message)
+
+
+class UnknownSourceMapError(ValidationError):
+    resolutions = (
+        'Something is really broken, and I can\'t provide any advice. :(',
+    )
+
+    def __init__(self, url=None):
+        message = "Your SourceMap is really broken."
+        super(UnknownSourceMapError, self).__init__(message)

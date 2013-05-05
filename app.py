@@ -12,7 +12,7 @@ from validator.base import Application
 from validator.errors import (
     ValidationError, UnableToFetchMinified, UnableToFetchSourceMap,
     UnableToFetchSources, SourceMapNotFound, InvalidSourceMapFormat,
-    BrokenComment)
+    BrokenComment, UnknownSourceMapError)
 from validator.objects import BadToken, SourceMap
 
 
@@ -43,6 +43,8 @@ def sourcemap_from_url(url):
         return SourceMap(js, smap_url, sourcemap.loads(smap.body))
     except ValueError:
         raise InvalidSourceMapFormat(smap_url)
+    except sourcemap.SourceMapDecodeError:
+        raise UnknownSourceMapError(smap_url)
 
 
 def sources_from_index(smap, base):
