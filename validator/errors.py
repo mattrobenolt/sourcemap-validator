@@ -81,5 +81,5 @@ class InvalidLines(ValidationError):
     )
 
     def __init__(self, token):
-        message = "SourceMap thinks that line %d is a thing, but it's not." % token.src_line
+        message = "SourceMap thinks that line %d of <code>%s</code> is a thing, but it's not." % (token.src_line, token.src)
         super(InvalidLines, self).__init__(message)
