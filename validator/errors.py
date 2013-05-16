@@ -77,7 +77,7 @@ class UnknownSourceMapError(ValidationError):
 
 class InvalidLines(ValidationError):
     resolutions = (
-        'Your sourcemap is referencing a line that does not exist.'
+        'Your sourcemap is referencing a line that does not exist.',
     )
 
     def __init__(self, token):
