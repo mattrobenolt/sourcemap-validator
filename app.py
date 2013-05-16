@@ -12,7 +12,7 @@ from validator.base import Application
 from validator.errors import (
     ValidationError, UnableToFetchMinified, UnableToFetchSourceMap,
     UnableToFetchSources, SourceMapNotFound, InvalidSourceMapFormat,
-    BrokenComment, UnknownSourceMapError)
+    BrokenComment, UnknownSourceMapError, InvalidLines)
 from validator.objects import BadToken, SourceMap
 
 
@@ -93,7 +93,10 @@ def generate_report(base, smap, sources):
             # lol, the token is referencing a line that is a comment. Derp.
             raise BrokenComment(token)
         src = sources[make_absolute(token.src)]
-        line = src[token.src_line]
+        try:
+            line = src[token.src_line]
+        except IndexError:
+            raise InvalidLines(token)
         start = token.src_col
         end = start + len(token.name)
         substring = line[start:end]

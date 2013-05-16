@@ -73,3 +73,13 @@ class UnknownSourceMapError(ValidationError):
     def __init__(self, url=None):
         message = "Your SourceMap is really broken."
         super(UnknownSourceMapError, self).__init__(message)
+
+
+class InvalidLines(ValidationError):
+    resolutions = (
+        'Your sourcemap is referencing a line that does not exist.'
+    )
+
+    def __init__(self, token):
+        message = "SourceMap thinks that line %d is a thing, but it's not." % token.src_line
+        super(InvalidLines, self).__init__(message)
