@@ -35,7 +35,7 @@ class UnableToFetchSources(ValidationError):
 
 class SourceMapNotFound(ValidationError):
     resolutions = (
-        'Add a <code>//@ sourceMappingURL=</code> declaration',
+        'Add a <code>//# sourceMappingURL=</code> declaration',
         'Add a SourceMap HTTP response header'
     )
 
