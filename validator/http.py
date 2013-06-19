@@ -85,7 +85,7 @@ def fetch_libs():
 
 def get_cdnjs_libs():
     packages = simplejson.loads(fetch_url('http://cdnjs.com/packages.json').body)['packages']
-    packages = filter(lambda pkg: pkg['filename'].endswith('.js'), packages)
+    packages = filter(lambda pkg: pkg.get('filename', '').endswith('.js'), packages)
     make_url = lambda pkg: (pkg['name'], 'http://cdnjs.cloudflare.com/ajax/libs/%(name)s/%(version)s/%(filename)s' % pkg)
     return map(make_url, packages)
 
