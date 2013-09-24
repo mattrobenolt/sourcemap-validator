@@ -49,10 +49,10 @@ class InvalidSourceMapFormat(ValidationError):
         'Everything is broken. Is this really a SourceMap?',
     )
 
-    def __init__(self, url, msg=None):
+    def __init__(self, url, error=None):
         message = "Invalid SourceMap format <code>%s</code>" % url
-        if msg:
-            message += ': %s' % (msg,)
+        if error:
+            message += ': %s' % (error,)
         super(InvalidSourceMapFormat, self).__init__(message)
 
 
@@ -72,10 +72,10 @@ class UnknownSourceMapError(ValidationError):
         'Something is really broken, and I can\'t provide any advice. :(',
     )
 
-    def __init__(self, url=None, msg=None):
+    def __init__(self, url=None, error=None):
         message = "Your SourceMap is really broken"
-        if msg:
-            message += ': %s' % (msg,)
+        if error:
+            message += ': %s' % (error,)
         super(UnknownSourceMapError, self).__init__(message)
 
 
