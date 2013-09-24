@@ -41,10 +41,10 @@ def sourcemap_from_url(url):
         raise UnableToFetchSourceMap(smap_url)
     try:
         return SourceMap(js, smap_url, sourcemap.loads(smap.body))
-    except ValueError:
-        raise InvalidSourceMapFormat(smap_url)
-    except sourcemap.SourceMapDecodeError:
-        raise UnknownSourceMapError(smap_url)
+    except sourcemap.SourceMapDecodeError, exc:
+        raise UnknownSourceMapError(smap_url, exc)
+    except ValueError, exc:
+        raise InvalidSourceMapFormat(smap_url, exc)
 
 
 def sources_from_index(smap, base):
