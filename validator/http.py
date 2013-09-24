@@ -42,7 +42,7 @@ def fetch_url(url, logger=None):
             except AttributeError:
                 encoding = DEFAULT_ENCODING
         body = body.decode(encoding).rstrip('\n')
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         return UrlResult(url, None, None, e.code)
     except Exception:
         return UrlResult(url, None, None, 0)

@@ -39,9 +39,9 @@ class Application(object):
         try:
             endpoint, values = adapter.match()
             return getattr(self, endpoint)(request, **values)
-        except NotFound, e:
+        except NotFound as e:
             return self.error_404()
-        except HTTPException, e:
+        except HTTPException as e:
             return e
 
     def __call__(self, environ, start_response):
