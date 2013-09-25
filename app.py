@@ -41,10 +41,10 @@ def sourcemap_from_url(url):
         raise UnableToFetchSourceMap(smap_url)
     try:
         return SourceMap(js, smap_url, sourcemap.loads(smap.body))
-    except ValueError:
-        raise InvalidSourceMapFormat(smap_url)
-    except sourcemap.SourceMapDecodeError:
-        raise UnknownSourceMapError(smap_url)
+    except sourcemap.SourceMapDecodeError as e:
+        raise UnknownSourceMapError(smap_url, e)
+    except ValueError as e:
+        raise InvalidSourceMapFormat(smap_url, e)
 
 
 def sources_from_index(smap, base):
@@ -163,7 +163,7 @@ class Validator(Application):
             except KeyError:
                 pass
             return self.json(data, callback=callback)
-        except ValidationError, e:
+        except ValidationError as e:
             return self.json({'error': e}, callback=callback)
 
     def validate(self, request):
@@ -174,7 +174,7 @@ class Validator(Application):
             smap = sourcemap_from_url(url)
             sources = sources_from_index(smap, url)
             report = generate_report(url, smap, sources)
-        except ValidationError, e:
+        except ValidationError as e:
             report = {
                 'errors': [e],
                 'warnings': [],
