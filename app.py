@@ -100,7 +100,8 @@ def generate_report(base, smap, sources):
         start = token.src_col
         end = start + len(token.name)
         substring = line[start:end]
-        if substring != token.name:
+        # Check for an exact match, or an off-by-one from uglify
+        if token.name not in (substring, line[start+1:end+1]):
             if len(line) > 200:
                 # This is a good guess that the source file is minified too
                 pre_context = []
