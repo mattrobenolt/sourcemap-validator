@@ -50,8 +50,8 @@ def sourcemap_from_url(url):
 def sources_from_index(smap, base):
     index = smap.index
     make_absolute = partial(urljoin, base)
-    if 'sourcesContent' in smap.index.raw:
-        sources = smap.index.raw['sourcesContent']
+    if 'sourcesContent' in index.raw:
+        sources = index.raw['sourcesContent']
         return {make_absolute(index.sources[i]): s.splitlines() for i, s in enumerate(sources)}
 
     sources = fetch_urls(map(make_absolute, index.sources))
