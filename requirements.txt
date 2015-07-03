@@ -1,6 +1,7 @@
 Jinja2==2.7.3
 Werkzeug==0.10.4
 beautifulsoup4==4.3.2
+cffi==1.1.2
 gevent==1.0.2
 html5lib==0.95
 raven==5.3.1
