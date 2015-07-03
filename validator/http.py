@@ -1,53 +1,24 @@
 from collections import namedtuple
 import sys
-import re
-import zlib
-import urllib2
 import simplejson
+import requests
 from bs4 import BeautifulSoup
 
 
 UrlResult = namedtuple('UrlResult', ['url', 'headers', 'body', 'status_code'])
 
-CHARSET_RE = re.compile(r'charset=(\S+)')
-DEFAULT_ENCODING = 'utf-8'
 
+def fetch_url(url):
+    headers = {'User-Agent': 'THE SourceMap Validator/0.0'}
 
-def fetch_url(url, logger=None):
-    """
-    Pull down a URL, returning a UrlResult object.
-    """
     try:
-        opener = urllib2.build_opener()
-        opener.addheaders = [
-            ('User-Agent', 'THE SourceMap Validator/0.0'),
-            ('Accept-Encoding', 'gzip'),  # gzip for the speedz
-        ]
-        req = opener.open(url)
-        headers = req.headers
-        body = req.read()
-        if headers.get('content-encoding') == 'gzip':
-            # Content doesn't *have* to respect the Accept-Encoding header
-            # and may send gzipped data regardless.
-            # See: http://stackoverflow.com/questions/2423866/python-decompressing-gzip-chunk-by-chunk/2424549#2424549
-            body = zlib.decompress(body, 16 + zlib.MAX_WBITS)
-        try:
-            content_type = headers['content-type']
-        except KeyError:
-            # If there is no content_type header at all, quickly assume default utf-8 encoding
-            encoding = DEFAULT_ENCODING
-        else:
-            try:
-                encoding = CHARSET_RE.search(content_type).group(1)
-            except AttributeError:
-                encoding = DEFAULT_ENCODING
-        body = body.decode(encoding).rstrip('\n')
-    except urllib2.HTTPError as e:
-        return UrlResult(url, None, None, e.code)
+        response = requests.get(url, headers=headers)
     except Exception:
         return UrlResult(url, None, None, 0)
 
-    return UrlResult(url, headers, body, 200)
+    if response.status_code != 200:
+        return UrlResult(url, None, None, response.status_code)
+    return UrlResult(url, response.headers, response.text, response.status_code)
 
 
 def fetch_urls(urls):

@@ -4,5 +4,6 @@ beautifulsoup4==4.1.3
 gevent==0.13.8
 html5lib==0.95
 raven==3.3.3
+requests[security]==2.7.0
 simplejson==3.1.3
 sourcemap==0.1.8
