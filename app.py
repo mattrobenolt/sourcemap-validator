@@ -188,9 +188,12 @@ class Validator(Application):
             report['index'] = getattr(smap, 'index', None)
 
         sources = sources.keys()
-        prefix = commonprefix(sources)
-        if len(prefix) > 0:
-            sources = [s[len(prefix):] for s in sources]
+        prefix = ''
+        if len(sources) > 1:
+            prefix = commonprefix(sources)
+            if len(prefix) > 0:
+                sources = [s[len(prefix):] for s in sources]
+
         context = {
             'url': url,
             'report': report,
