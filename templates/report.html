@@ -44,7 +44,7 @@
   <div class="span10">
     <h2 id="sources">Sources <span class="badge badge-info">{{ sources|length }}</span></h2>
     {% for source in sources %}
-    <li><a href="{{ source }}" target="_blank">{{ source }} <i class="icon-share"></i></a></li>
+    <li><a href="{{ sources_prefix }}{{ source }}" target="_blank">{{ source }} <i class="icon-share"></i></a></li>
     {% endfor %}
 
     <h2 id="errors">Errors <span class="badge badge-important">{{ report.errors|length }}</span></h2>

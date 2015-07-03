@@ -2,6 +2,7 @@
 import os
 import re
 import sourcemap
+from os.path import commonprefix
 from urlparse import urljoin
 from functools import partial
 from operator import itemgetter
@@ -186,10 +187,15 @@ class Validator(Application):
             }
             report['index'] = getattr(smap, 'index', None)
 
+        sources = sources.keys()
+        prefix = commonprefix(sources)
+        if len(prefix) > 0:
+            sources = [s[len(prefix):] for s in sources]
         context = {
             'url': url,
             'report': report,
-            'sources': sources.keys(),
+            'sources_prefix': prefix,
+            'sources': sources,
             'sourcemap_url': getattr(smap, 'url', None),
         }
         return context
