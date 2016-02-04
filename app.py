@@ -142,8 +142,8 @@ class Validator(Application):
             Rule('/', endpoint='index'),
             Rule('/validate', endpoint='validate_html'),
             Rule('/validate.json', endpoint='validate_json'),
-            Rule('/libraries', endpoint='libraries_html'),
-            Rule('/libraries.json', endpoint='libraries_json'),
+            #Rule('/libraries', endpoint='libraries_html'),
+            #Rule('/libraries.json', endpoint='libraries_json'),
         ])
 
     def index(self, request):
