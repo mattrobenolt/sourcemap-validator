@@ -236,4 +236,5 @@ if __name__ == '__main__':
         from gevent.pool import Pool
         from gevent import monkey
         monkey.patch_all()
-        WSGIServer(('', port), app, spawn=Pool(50)).serve_forever()
+        pool_size = int(os.environ.get('POOL_SIZE', 1000))
+        WSGIServer(('', port), app, spawn=Pool(pool_size)).serve_forever()
